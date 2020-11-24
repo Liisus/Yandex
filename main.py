@@ -1,59 +1,31 @@
 import sys
 
-from random import random
-from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtGui import QColor, QPainter
+import sqlite3
 from PyQt5 import uic
-from PyQt5.QtWidgets import QApplication, QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem
+from PyQt5 import QtWidgets
 
 
-class Ui_Form(object):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(527, 422)
-        self.pushButton = QtWidgets.QPushButton(Form)
-        self.pushButton.setGeometry(QtCore.QRect(10, 10, 83, 22))
-        self.pushButton.setObjectName("pushButton")
-
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
-
-    def retranslateUi(self, Form):
-        _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "Form"))
-        self.pushButton.setText(_translate("Form", "Button"))
-
-
-class MyWidget(QMainWindow, Ui_Form):
+class MyWidget(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setupUi(self)
-        self.b = False
+        uic.loadUi('main.ui', self)
         self.initUI()
 
     def initUI(self):
-        self.pushButton.clicked.connect(self.paint)
+        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
+        self.tableWidget.itemDoubleClicked.connect(self.edit)
+        coffee = sqlite3.connect('coffee.sqlite').cursor().execute('Select * from coffee').fetchall()
+        self.tableWidget.setColumnCount(7)
+        for i, row in enumerate(coffee):
+            self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
+            for j, elem in enumerate(row):
+                self.tableWidget.setItem(i, j, QTableWidgetItem(str(elem)))
+        self.tableWidget.setHorizontalHeaderLabels(['id', 'sort', 'degree of roast', 'ground',
+                                                    'taste', 'price', 'packing volume'])
 
-
-    def paintEvent(self, event):
-        qp = QPainter()
-        qp.begin(self)
-        self.draw_flag(qp)
-        qp.end()
-
-
-    def paint(self):
-        self.repaint()
-
-
-    def draw_flag(self, qp):
-        if self.b:
-            qp.setBrush(QColor(int(255 * random()), int(255 * random()), int(255 * random())))
-            a = int(250 * random())
-            qp.drawEllipse(int(527 * random()), int(422 * random()), a, a)
-        else:
-            self.b = True
-
+    def edit(self):
+        pass
 
 
 if __name__ == '__main__':
