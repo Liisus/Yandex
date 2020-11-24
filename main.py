@@ -1,17 +1,17 @@
 import sys
 
 import sqlite3
-from PyQt5 import uic
+from UI import main, edit
 from PyQt5.QtWidgets import QMainWindow, QApplication, QTableWidgetItem
 from PyQt5 import QtWidgets
 
 
-class Form(QtWidgets.QWidget):
+class Form(QtWidgets.QWidget, edit.Ui_Form):
     def __init__(self, parent, arg=None):
         super().__init__()
         if arg is None:
             arg = [-1] + [''] * 6
-        uic.loadUi('addEditCoffeeForm.ui', self)
+        self.setupUi(self)
         self.id = arg[0]
         self.initUI(arg)
         self.parent = parent
@@ -31,7 +31,7 @@ class Form(QtWidgets.QWidget):
         self.close()
 
     def ok(self):
-        con = sqlite3.connect('coffee.sqlite')
+        con = sqlite3.connect('data/coffee.sqlite')
         con.commit()
         con.cursor().execute(f'Delete from coffee\n'
                              f'where id = ' + str(self.id))
@@ -51,10 +51,10 @@ class Form(QtWidgets.QWidget):
         self.close()
 
 
-class MyWidget(QMainWindow):
+class MyWidget(QMainWindow, main.Ui_Form):
     def __init__(self):
         super().__init__()
-        uic.loadUi('main.ui', self)
+        self.setupUi(self)
         self.initUI()
         self.f = None
 
@@ -65,7 +65,8 @@ class MyWidget(QMainWindow):
         self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         self.tableWidget.itemDoubleClicked.connect(self.edit)
         self.pushButton.clicked.connect(self.crt)
-        coffee = sqlite3.connect('coffee.sqlite').cursor().execute('Select * from coffee').fetchall()
+        coffee = sqlite3.connect('data/coffee.sqlite').cursor().execute('Select * '
+                                                                        'from coffee').fetchall()
         self.tableWidget.setColumnCount(7)
         for i, row in enumerate(coffee):
             self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
